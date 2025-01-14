@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Form Surat Permohonan Pembayaran Jasa</title>
+
+  <style>
+    /* ------ Gaya dasar ------ */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    /* Bagian judul form (tidak ikut tercetak) */
+    h1.hide-print {
+      margin-bottom: 10px;
+    }
+
+    .form-section {
+      margin-bottom: 15px;
+    }
+
+    .label {
+      display: inline-block;
+      width: 150px;
+      vertical-align: top;
+      margin-bottom: 6px;
+    }
+
+    /* Bungkus form dalam #formInputSurat (akan di-hide saat print) */
+    #formInputSurat {
+      margin-bottom: 30px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 15px;
+    }
+
+    /* Bagian preview surat */
+    #previewSurat {
+      display: none; /* Awalnya disembunyikan, baru muncul menjelang print */
+      margin-top: 20px;
+    }
+
+    .header-surat {
+      text-align: center;
+      border-bottom: 1px solid #000;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+
+    /* ------ Sembunyikan bagian tertentu saat print ------ */
+    @media print {
+      /* Sembunyikan form, judul form, dan email di form */
+      #formInputSurat,
+      h1.hide-print {
+        display: none !important;
+      }
+      /* Tampilkan preview saat print */
+      #previewSurat {
+        display: block !important;
+      }
+    }
+
+    /* Tabel info surat (nomor, lampiran, dsb.) */
+    .info-surat table {
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    .info-surat table td {
+      padding: 2px 5px;
+    }
+
+    /* Bagian footer/kop PT di preview */
+    .kop-pt {
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    .alamat-pt {
+      font-size: 0.9rem;
+    }
+
+    /* Tanda tangan */
+    .ttd {
+      margin-top: 50px;
+      float: right;
+    }
+  </style>
+</head>
+
+<body onload="generateNoSurat()">
+
+  <!-- Judul form, tidak dicetak karena ada class hide-print -->
+  <h1 class="hide-print">Form Surat Permohonan Pembayaran Jasa</h1>
+
+  <!-- ===================== FORM INPUT ===================== -->
+  <div id="formInputSurat">
+    <div class="form-section">
+      <label class="label" for="namaPt">Nama PT</label>
+      <input type="text" id="namaPt" placeholder="Contoh: PT Mandiri Dinamis" />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="alamatPt">Alamat PT</label>
+      <input type="text" id="alamatPt" placeholder="Contoh: Jl. Merak Nomor 01" />
+    </div>
+
+    <!-- Lokasi PT -->
+    <div class="form-section">
+      <label class="label" for="lokasiPt">Lokasi PT</label>
+      <input type="text" id="lokasiPt" placeholder="Contoh: Tangerang, Banten" />
+    </div>
+
+    <!-- Email PT -->
+    <div class="form-section">
+      <label class="label" for="emailPt">Email PT</label>
+      <input type="text" id="emailPt" placeholder="Contoh: ptmandiridinamis@yahoo.co.id" />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="noSurat">Nomor Surat</label>
+      <!-- Disable, auto-generate -->
+      <input type="text" id="noSurat" disabled />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="perihalSurat">Perihal</label>
+      <input type="text" id="perihalSurat" placeholder="Permohonan Pembayaran Jasa" />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="namaTujuan">Nama Tujuan</label>
+      <input type="text" id="namaTujuan" placeholder="Contoh: CV. Laju Jaya" />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="alamatTujuan">Alamat Tujuan</label>
+      <input type="text" id="alamatTujuan" placeholder="Contoh: Jl. Kutisari Indah Utara IV No 8" />
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="isiSurat">Isi Surat</label><br />
+      <textarea id="isiSurat" rows="6" cols="60" placeholder="Tulis isi surat di sini..."></textarea>
+    </div>
+
+    <div class="form-section">
+      <label class="label" for="namaTtd">Nama Penandatangan</label>
+      <input type="text" id="namaTtd" placeholder="Contoh: Nama Penanggung Jawab" />
+    </div>
+
+    <button onclick="cetakSurat()">Cetak Surat</button>
+  </div>
+  <!-- ===================== /FORM INPUT ===================== -->
+
+  <!-- ===================== PREVIEW SURAT ===================== -->
+  <div id="previewSurat">
+    <!-- Kop PT -->
+    <div class="header-surat">
+      <div class="kop-pt" id="kopPt"></div>
+      <div class="alamat-pt" id="alamatPtPreview"></div>
+      <div class="alamat-pt" id="emailPtPreview"></div>
+    </div>
+
+    <!-- Tanggal dan Info Surat -->
+    <div style="text-align:right;">
+      <span id="tanggalSurat"></span>
+    </div>
+
+    <div class="info-surat">
+      <table>
+        <tr>
+          <td>Nomor</td>
+          <td>: <span id="previewNoSurat"></span></td>
+        </tr>
+        <tr>
+          <td>Lampiran</td>
+          <td>: 2</td> <!-- Contoh -->
+        </tr>
+        <tr>
+          <td>Perihal</td>
+          <td>: <span id="previewPerihal"></span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Tujuan -->
+    <p  style="padding-left: 6px;">
+      Yth.<br />
+      <span id="previewNamaTujuan"></span><br />
+      <span id="previewAlamatTujuan"></span>
+    </p>
+
+    <!-- Isi surat -->
+    <p id="previewIsiSurat"  style="margin-left: 6px;"></p>
+
+    <!-- Penutup & Tanda Tangan -->
+    <div class="ttd">
+      <p>Hormat kami,<br>
+      <span id="previewNamaPt"></span></p>
+      <br><br>
+      <p><strong><span id="previewNamaTtd"></span></strong></p>
+    </div>
+  </div>
+  <!-- ===================== /PREVIEW SURAT ===================== -->
+
+  <script>
+    // Auto-generate nomor surat dengan format SU(dd-mm-yyyy)
+    function generateNoSurat() {
+  var now = new Date();
+  var dd = String(now.getDate()).padStart(2, '0');
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var yyyy = now.getFullYear();
+  
+  // Tambahkan angka acak 1000-5000
+  var randomNumber = Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
+  
+  var autoNumber = "SU/" + dd + "/" + mm + "/" + yyyy + "-" + randomNumber;
+  document.getElementById("noSurat").value = autoNumber;
+}
+
+
+    function cetakSurat() {
+      // Ambil nilai form
+      var namaPt       = document.getElementById("namaPt").value.trim() || "PT Mandiri Dinamis";
+      var alamatPt     = document.getElementById("alamatPt").value.trim() || "Jl. Merak Nomor 01";
+      var lokasiPt     = document.getElementById("lokasiPt").value.trim() || "Tangerang, Banten";
+      var emailPt      = document.getElementById("emailPt").value.trim() || "ptmandiridinamis@yahoo.co.id";
+      var noSurat      = document.getElementById("noSurat").value;
+      var perihalSurat = document.getElementById("perihalSurat").value.trim() || "Permohonan Pembayaran Jasa";
+      var namaTujuan   = document.getElementById("namaTujuan").value.trim();
+      var alamatTujuan = document.getElementById("alamatTujuan").value.trim();
+      var isiSurat     = document.getElementById("isiSurat").value;
+      var namaTtd      = document.getElementById("namaTtd").value.trim();
+
+      // Masukkan hasil ke #previewSurat
+      document.getElementById("kopPt").innerText = namaPt;
+
+      // Hilangkan "Email:" tambahan supaya tidak dobel
+      // Sehingga yang muncul hanya: "Jl. Merak Nomor 01, Tangerang, Banten, ptmandiridinamis@yahoo.co.id"
+      document.getElementById("alamatPtPreview").innerText =
+        alamatPt + ", " + lokasiPt;
+        document.getElementById("emailPtPreview").innerText =
+         emailPt;
+      // Format tanggal (misalnya: "Banten, 14 Januari 2025")
+      var now = new Date();
+      var options = { day: 'numeric', month: 'long', year: 'numeric' };
+      var tglSurat = now.toLocaleDateString('id-ID', options);
+      document.getElementById("tanggalSurat").innerText = lokasiPt + ", " + tglSurat;
+
+      document.getElementById("previewNoSurat").innerText = noSurat;
+      document.getElementById("previewPerihal").innerText = perihalSurat;
+      document.getElementById("previewNamaTujuan").innerText = namaTujuan;
+      document.getElementById("previewAlamatTujuan").innerText = alamatTujuan;
+      document.getElementById("previewIsiSurat").innerText = isiSurat;
+      document.getElementById("previewNamaPt").innerText = namaPt;
+      document.getElementById("previewNamaTtd").innerText = namaTtd;
+
+      // Tampilkan #previewSurat (agar terlihat di layar) sebelum print
+      document.getElementById("previewSurat").style.display = "block";
+
+      // Proses cetak
+      window.print();
+
+      // (Opsional) Jika ingin #previewSurat disembunyikan lagi setelah print
+      // document.getElementById("previewSurat").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>
